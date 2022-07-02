@@ -28,7 +28,10 @@ mod blockchain;
 // }
 
 fn main() {
-    let block = Block::new(0, 0, 0);
-    let hash = Block::get_hash(block);
-    println!("Base64-encoded hash: {}", hash);
+    let mut blockchain = Blockchain::new();
+    blockchain.mine_block();
+    blockchain.mine_block();
+    blockchain.mine_block();
+    let valid = blockchain.is_chain_valid();
+    println!("Chain validity: {}", valid);
 }
