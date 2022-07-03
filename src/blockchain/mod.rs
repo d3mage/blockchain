@@ -1,11 +1,16 @@
 pub mod blockchain {
     use base16;
     use chrono;
+    use chrono::serde::ts_seconds;
     use chrono::Utc;
     use core::fmt;
+    use serde::{Deserialize, Serialize};
     use sha2::{Digest, Sha256};
+
+    #[derive(Serialize, Deserialize)]
     pub struct Block {
         index: u8,
+        #[serde(with = "ts_seconds")]
         timestamp: chrono::DateTime<Utc>,
         nonce: u128,
         prev_hash: String,
@@ -83,7 +88,7 @@ pub mod blockchain {
     }
 
     pub struct Blockchain {
-        chain: Vec<Block>,
+        pub chain: Vec<Block>,
     }
 
     impl Blockchain {
@@ -100,12 +105,13 @@ pub mod blockchain {
             &self.chain[length - 1]
         }
 
-        pub fn mine_block(&mut self) {
-            let index = (self.chain.len() - 1) as u8;
+        pub fn mine_block(&mut self) -> &Block {
+            let index = self.chain.len() as u8;
             let last_block = self.get_last_block();
 
             let new_block = Block::mine_block(index, &last_block);
             self.chain.push(new_block);
+            self.get_last_block()
         }
 
         pub fn is_chain_valid(&self) -> bool {
@@ -127,7 +133,7 @@ pub mod blockchain {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             let mut current_block: &Block;
             let length = self.chain.len();
-            for i in 1..length {
+            for i in 0..length {
                 current_block = &self.chain[i];
                 write!(
                     f,
